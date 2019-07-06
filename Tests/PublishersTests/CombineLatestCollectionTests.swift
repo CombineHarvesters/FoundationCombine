@@ -7,6 +7,39 @@ import XCTest
 @available(OSX 10.15, *)
 final class CombineLatestCollectionTests: XCTestCase {
 
+    func testCombineLatest() {
+
+        let expectation = self.expectation(description: "test combine latest")
+
+        let value1 = PassthroughSubject<Int, TestingError>()
+        let value2 = PassthroughSubject<Int, TestingError>()
+
+        let combineLatest = [value1, value2].combineLatest { $0.reduce(0, +) }
+        let tracking = TrackingSubscriber(
+            receiveSubscription: { $0.request(.unlimited) },
+            receiveCompletion:  { _ in expectation.fulfill() }
+        )
+
+        value1.send(1)
+        combineLatest.subscribe(tracking) // Subscription
+        value2.send(2)
+        value1.send(3) // Five
+        value2.send(4) // Seven
+        value1.send(completion: .finished)
+        value1.send(5)
+        value2.send(6) // Nine
+        value2.send(completion: .finished) // Completion
+        value2.send(7)
+
+        wait(for: [expectation], timeout: 0.5)
+
+        XCTAssertEqual(tracking.history, [.subscription(Subscriptions.empty),
+                                          .value(5),
+                                          .value(7),
+                                          .value(9),
+                                          .completion(.finished)])
+    }
+
     func testBasic() {
 
         let e = expectation(description: "test")
