@@ -78,14 +78,14 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let value = Just(0)
 
-        let publisher = [value]
+        let subscriber = [value]
             .combineLatest { $0.reduce(0, +) }
             .handleEvents(receiveCancel: {
                 receivedCancel.fulfill()
             })
             .sink { _ in }
 
-        publisher.cancel()
+        subscriber.cancel()
 
         wait(for: [receivedCancel], timeout: 1)
     }
