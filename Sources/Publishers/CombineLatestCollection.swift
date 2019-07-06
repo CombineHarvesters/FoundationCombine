@@ -27,17 +27,10 @@ public final class CombineLatestCollection<Base, Output>: Publisher
 
     private let publishers: Base
     private let transform: ([Value]) -> Output
-    private var values: [Value?]
-    private var completions: [Subscribers.Completion<Failure>] = []
-    private let queue = DispatchQueue(label: "CombineLatestPublisherQueue")
 
-    public init(
-        _ publishers: Base,
-        transform: @escaping ([Value]) -> Output
-    ) {
+    public init(_ publishers: Base, transform: @escaping ([Value]) -> Output) {
         self.publishers = publishers
         self.transform = transform
-        self.values = Array(repeating: nil, count: publishers.count)
     }
 
     public func receive<S>(subscriber: S)
@@ -46,8 +39,38 @@ public final class CombineLatestCollection<Base, Output>: Publisher
         S.Failure == Failure,
         S.Input == Output
     {
+        let subscription =  CombineLatestCollectionSubscription(subscriber: subscriber,
+                                                                publishers: publishers,
+                                                                transform: transform)
+        subscriber.receive(subscription: subscription)
+    }
+}
 
-        let subscribers = publishers.enumerated().map { index, publisher in
+@available(iOS 13, *)
+@available(OSX 10.15, *)
+public final class CombineLatestCollectionSubscription<Publishers, Subscriber, Output>: Subscription
+    where
+    Publishers: Collection,
+    Publishers.Element: Publisher,
+    Subscriber: Combine.Subscriber,
+    Subscriber.Failure == Publishers.Element.Failure,
+    Subscriber.Input == Output
+{
+
+    public typealias Value = Publishers.Element.Output
+    public typealias Failure = Publishers.Element.Failure
+
+    private let subscribers: [Subscribers.Sink<Value, Failure>]
+
+    fileprivate init(subscriber: Subscriber,
+                     publishers: Publishers,
+                     transform: @escaping ([Value]) -> Output) {
+
+        var values: [Value?] = Array(repeating: nil, count: publishers.count)
+        var completions: [Subscribers.Completion<Failure>] = []
+        let queue = DispatchQueue(label: "CombineLatestCollection")
+
+        subscribers = publishers.enumerated().map { index, publisher in
 
             publisher
                 .receive(on: queue)
@@ -58,42 +81,30 @@ public final class CombineLatestCollection<Base, Output>: Publisher
                         return
                     }
 
-                    self.completions.append(completion)
+                    completions.append(completion)
 
-                    guard self.completions.count == self.publishers.count else { return }
+                    guard completions.count == publishers.count else { return }
 
                     subscriber.receive(completion: completion)
                 })
                 .sink { value in
 
-                    self.values[index] = value
+                    values[index] = value
 
                     // Get non-optional array of values and make sure we have a
                     // full array of values.
-                    let current = self.values.compactMap { $0 }
-                    guard current.count == self.publishers.count else { return }
+                    let current = values.compactMap { $0 }
+                    guard current.count == publishers.count else { return }
 
-                    _ = subscriber.receive(self.transform(current))
+                    _ = subscriber.receive(transform(current))
                 }
         }
-
-        let subscription =  CombineLatestCollectionSubscription(cancellables: subscribers)
-        subscriber.receive(subscription: subscription)
-    }
-}
-
-@available(iOS 13, *)
-@available(OSX 10.15, *)
-public final class CombineLatestCollectionSubscription<C: Cancellable>: Subscription {
-
-    private let cancellables: [C]
-    fileprivate init(cancellables: [C]) {
-        self.cancellables = cancellables
     }
 
-    public func request(_ demand: Subscribers.Demand) {}
+    public func request(_ demand: Subscribers.Demand) {
+    }
 
     public func cancel() {
-        cancellables.forEach { $0.cancel() }
+        subscribers.forEach { $0.cancel() }
     }
 }
