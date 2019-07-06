@@ -44,8 +44,8 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let e = expectation(description: "test")
 
-        let twelve = Publishers.Just(12)
-        let four = Publishers.Just(4)
+        let twelve = Just(12)
+        let four = Just(4)
         _ = [twelve, four]
             .combineLatest { $0.reduce(0, +) }
             .sink { value in
@@ -60,7 +60,7 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let receivedSubscription = expectation(description: "received subscription")
 
-        let value = Publishers.Just(0)
+        let value = Just(0)
 
         _ = [value]
             .combineLatest { $0.reduce(0, +) }
@@ -76,7 +76,7 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let receivedCancel = expectation(description: "receive cancel")
 
-        let value = Publishers.Just(0)
+        let value = Just(0)
 
         let publisher = [value]
             .combineLatest { $0.reduce(0, +) }
