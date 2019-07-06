@@ -16,7 +16,7 @@ extension Collection where Element: Publisher {
 /// A custom `Publisher` that
 @available(iOS 13, *)
 @available(OSX 10.15, *)
-public final class CombineLatestCollection<Base, Output>: Publisher
+public struct CombineLatestCollection<Base, Output>: Publisher
     where
     Base: Collection,
     Base.Element: Publisher
