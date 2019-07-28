@@ -18,6 +18,7 @@ import Combine
 /// `TrackingSubscriber.Event.subscription(Subscription.empty)`
 /// is considered equal to any other subscription no matter what the subscription object
 /// actually is.
+@available(iOS 13, *)
 @available(macOS 10.15, *)
 typealias TrackingSubscriber = TrackingSubscriberBase<Int, TestingError>
 
@@ -32,6 +33,7 @@ typealias TrackingSubscriber = TrackingSubscriberBase<Int, TestingError>
 /// `TrackingSubscriber.Event.subscription(Subscription.empty)`
 /// is considered equal to any other subscription no matter what the subscription object
 /// actually is.
+@available(iOS 13, *)
 @available(macOS 10.15, *)
 final class TrackingSubscriberBase<Value: Equatable,
                                    Failure: Error>
@@ -162,6 +164,7 @@ final class TrackingSubscriberBase<Value: Equatable,
     }
 }
 
+@available(iOS 13, *)
 @available(macOS 10.15, *)
 final class TrackingSubject<Value: Equatable>: Subject {
 

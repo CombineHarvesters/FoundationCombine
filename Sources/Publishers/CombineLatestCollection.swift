@@ -57,36 +57,46 @@ extension CombineLatestCollection {
         Subscriber.Input == Output
     {
 
-        private let subscribers: [Subscribers.Sink<Value, Failure>]
+        private let subscribers: [AnyCancellable]
 
         fileprivate init(subscriber: Subscriber,
                          publishers: Base,
                          transform: @escaping ([Value]) -> Output) {
 
             var values: [Value?] = Array(repeating: nil, count: publishers.count)
-            var completions: [Subscribers.Completion<Failure>] = []
-            let queue = DispatchQueue(label: "CombineLatestCollection")
+            var completions = 0
+            var hasCompleted = false
+            var lock = pthread_mutex_t()
 
             subscribers = publishers.enumerated().map { index, publisher in
 
                 publisher
-                    .receive(on: queue)
-                    .handleEvents(receiveCompletion: { completion in
+                    .sink(receiveCompletion: { completion in
+
+                        pthread_mutex_lock(&lock)
+                        defer { pthread_mutex_unlock(&lock) }
 
                         guard case .finished = completion else {
                             // One failure in any of the publishers cause a
                             // failure for this subscription.
                             subscriber.receive(completion: completion)
+                            hasCompleted = true
                             return
                         }
 
-                        completions.append(completion)
+                        completions += 1
 
-                        if completions.count == publishers.count {
+                        if completions == publishers.count {
                             subscriber.receive(completion: completion)
+                            hasCompleted = true
                         }
-                    })
-                    .sink { value in
+
+                    }, receiveValue: { value in
+
+                        pthread_mutex_lock(&lock)
+                        defer { pthread_mutex_unlock(&lock) }
+
+                        guard !hasCompleted else { return }
 
                         values[index] = value
 
@@ -96,7 +106,7 @@ extension CombineLatestCollection {
                         if current.count == publishers.count {
                             _ = subscriber.receive(transform(current))
                         }
-                    }
+                    })
             }
         }
 
