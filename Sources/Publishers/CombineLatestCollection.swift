@@ -4,13 +4,22 @@ import Foundation
 
 extension Collection where Element: Publisher {
 
+    /// Combine the array of publishers to give a single publisher of an array
+    /// of their outputs.
     public var combineLatest: CombineLatestCollection<Self> {
         CombineLatestCollection(self)
     }
 }
 
-/// A custom `Publisher` that
-public struct CombineLatestCollection<Base>: Publisher
+/// A `Publisher` that combines an array of publishers to provide an output of
+/// an array of their respective outputs.
+///
+/// Changes will be sent if any of the publishers' values changes.
+///
+/// When any publisher fails, that will cause the failure of this publisher.
+///
+/// When all publishers complete successfully, that will cause the successful
+/// completion of this publisher.
 public struct CombineLatestCollection<Publishers>: Publisher
     where
     Publishers: Collection,
@@ -38,6 +47,7 @@ public struct CombineLatestCollection<Publishers>: Publisher
 
 extension CombineLatestCollection {
 
+    /// A subscription for a CombineLatestCollection publisher.
     public final class Subscription<Subscriber>: Combine.Subscription
         where
         Subscriber: Combine.Subscriber,
