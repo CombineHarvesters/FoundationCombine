@@ -3,8 +3,6 @@ import Combine
 import Publishers
 import XCTest
 
-@available(iOS 13, *)
-@available(OSX 10.15, *)
 final class CombineLatestCollectionTests: XCTestCase {
 
     func testSuccess() {

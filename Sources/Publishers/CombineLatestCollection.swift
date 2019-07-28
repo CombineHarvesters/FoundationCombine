@@ -2,8 +2,6 @@
 import Combine
 import Foundation
 
-@available(iOS 13, *)
-@available(OSX 10.15, *)
 extension Collection where Element: Publisher {
 
     public func combineLatest<T>(
@@ -14,8 +12,6 @@ extension Collection where Element: Publisher {
 }
 
 /// A custom `Publisher` that
-@available(iOS 13, *)
-@available(OSX 10.15, *)
 public struct CombineLatestCollection<Base, Output>: Publisher
     where
     Base: Collection,
@@ -46,8 +42,6 @@ public struct CombineLatestCollection<Base, Output>: Publisher
     }
 }
 
-@available(iOS 13, *)
-@available(OSX 10.15, *)
 extension CombineLatestCollection {
 
     public final class Subscription<Subscriber>: Combine.Subscription
