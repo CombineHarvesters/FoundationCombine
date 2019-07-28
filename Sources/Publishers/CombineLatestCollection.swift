@@ -11,16 +11,16 @@ extension Collection where Element: Publisher {
 
 /// A custom `Publisher` that
 public struct CombineLatestCollection<Base>: Publisher
+public struct CombineLatestCollection<Publishers>: Publisher
     where
-    Base: Collection,
-    Base.Element: Publisher
+    Publishers: Collection,
+    Publishers.Element: Publisher
 {
+    public typealias Output = [Publishers.Element.Output]
+    public typealias Failure = Publishers.Element.Failure
 
-    public typealias Output = [Base.Element.Output]
-    public typealias Failure = Base.Element.Failure
-
-    private let publishers: Base
-    public init(_ publishers: Base) {
+    private let publishers: Publishers
+    public init(_ publishers: Publishers) {
         self.publishers = publishers
     }
 
@@ -41,15 +41,15 @@ extension CombineLatestCollection {
     public final class Subscription<Subscriber>: Combine.Subscription
         where
         Subscriber: Combine.Subscriber,
-        Subscriber.Failure == Base.Element.Failure,
+        Subscriber.Failure == Publishers.Element.Failure,
         Subscriber.Input == Output
     {
 
         private let subscribers: [AnyCancellable]
 
-        fileprivate init(subscriber: Subscriber, publishers: Base) {
+        fileprivate init(subscriber: Subscriber, publishers: Publishers) {
 
-            var values: [Base.Element.Output?] = Array(repeating: nil, count: publishers.count)
+            var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
             var completions = 0
             var hasCompleted = false
             var lock = pthread_mutex_t()
