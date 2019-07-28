@@ -4,29 +4,24 @@ import Foundation
 
 extension Collection where Element: Publisher {
 
-    public func combineLatest<T>(
-        _ transform: @escaping ([Element.Output]) -> T
-    ) -> CombineLatestCollection<Self, T> {
-        CombineLatestCollection(self, transform: transform)
+    public var combineLatest: CombineLatestCollection<Self> {
+        CombineLatestCollection(self)
     }
 }
 
 /// A custom `Publisher` that
-public struct CombineLatestCollection<Base, Output>: Publisher
+public struct CombineLatestCollection<Base>: Publisher
     where
     Base: Collection,
     Base.Element: Publisher
 {
 
-    public typealias Value = Base.Element.Output
+    public typealias Output = [Base.Element.Output]
     public typealias Failure = Base.Element.Failure
 
     private let publishers: Base
-    private let transform: ([Value]) -> Output
-
-    public init(_ publishers: Base, transform: @escaping ([Value]) -> Output) {
+    public init(_ publishers: Base) {
         self.publishers = publishers
-        self.transform = transform
     }
 
     public func receive<Subscriber>(subscriber: Subscriber)
@@ -36,8 +31,7 @@ public struct CombineLatestCollection<Base, Output>: Publisher
         Subscriber.Input == Output
     {
         let subscription = Subscription(subscriber: subscriber,
-                                        publishers: publishers,
-                                        transform: transform)
+                                        publishers: publishers)
         subscriber.receive(subscription: subscription)
     }
 }
@@ -53,11 +47,9 @@ extension CombineLatestCollection {
 
         private let subscribers: [AnyCancellable]
 
-        fileprivate init(subscriber: Subscriber,
-                         publishers: Base,
-                         transform: @escaping ([Value]) -> Output) {
+        fileprivate init(subscriber: Subscriber, publishers: Base) {
 
-            var values: [Value?] = Array(repeating: nil, count: publishers.count)
+            var values: [Base.Element.Output?] = Array(repeating: nil, count: publishers.count)
             var completions = 0
             var hasCompleted = false
             var lock = pthread_mutex_t()
@@ -98,7 +90,7 @@ extension CombineLatestCollection {
                         // have a full array of values.
                         let current = values.compactMap { $0 }
                         if current.count == publishers.count {
-                            _ = subscriber.receive(transform(current))
+                            _ = subscriber.receive(current)
                         }
                     })
             }

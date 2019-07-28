@@ -10,7 +10,7 @@ final class CombineLatestCollectionTests: XCTestCase {
         let value1 = PassthroughSubject<Int, TestingError>()
         let value2 = PassthroughSubject<Int, TestingError>()
 
-        let combineLatest = [value1, value2].combineLatest { $0.reduce(0, +) }
+        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
         let tracking = TrackingSubscriber()
 
         value1.send(1)
@@ -36,7 +36,7 @@ final class CombineLatestCollectionTests: XCTestCase {
         let value1 = PassthroughSubject<Int, TestingError>()
         let value2 = PassthroughSubject<Int, TestingError>()
 
-        let combineLatest = [value1, value2].combineLatest { $0.reduce(0, +) }
+        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
         let tracking = TrackingSubscriber()
 
         let error = TestingError(description: "Test")
@@ -63,7 +63,7 @@ final class CombineLatestCollectionTests: XCTestCase {
         let value1 = PassthroughSubject<Int, TestingError>()
         let value2 = PassthroughSubject<Int, TestingError>()
 
-        let combineLatest = [value1, value2].combineLatest { $0.reduce(0, +) }
+        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
         let tracking = TrackingSubscriber()
 
         value1.send(1)
