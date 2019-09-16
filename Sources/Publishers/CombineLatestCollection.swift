@@ -62,15 +62,15 @@ extension CombineLatestCollection {
             var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
             var completions = 0
             var hasCompleted = false
-            var lock = pthread_mutex_t()
+            let lock = NSLock()
 
             subscribers = publishers.enumerated().map { index, publisher in
 
                 publisher
                     .sink(receiveCompletion: { completion in
 
-                        pthread_mutex_lock(&lock)
-                        defer { pthread_mutex_unlock(&lock) }
+                        lock.lock()
+                        defer { lock.unlock() }
 
                         guard case .finished = completion else {
                             // One failure in any of the publishers cause a
@@ -89,8 +89,8 @@ extension CombineLatestCollection {
 
                     }, receiveValue: { value in
 
-                        pthread_mutex_lock(&lock)
-                        defer { pthread_mutex_unlock(&lock) }
+                        lock.lock()
+                        defer { lock.unlock() }
 
                         guard !hasCompleted else { return }
 
