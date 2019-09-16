@@ -194,6 +194,8 @@ final class TrackingSubject<Value: Equatable>: Subject {
 
     private(set) var history: [Event] = []
 
+    func send(subscription: Subscription) {}
+
     func send(_ value: Value) {
         history.append(.value(value))
     }
