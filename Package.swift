@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Publishers",
+    name: "FoundationCombine",
     platforms: [
         .iOS(.v13),
         .macOS(.v10_15),
@@ -12,17 +12,17 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "Publishers",
-            targets: ["Publishers"]),
+            name: "FoundationCombine",
+            targets: ["FoundationCombine"]),
     ],
     dependencies: [
         .package(url: "https://github.com/CombineHarvesters/CombineTesting", .branch("master"))
     ],
     targets: [
         .target(
-            name: "Publishers"),
+            name: "FoundationCombine"),
         .testTarget(
-            name: "PublishersTests",
-            dependencies: ["Publishers", "CombineTesting"]),
+            name: "FoundationCombineTests",
+            dependencies: ["FoundationCombine", "CombineTesting"]),
     ]
 )

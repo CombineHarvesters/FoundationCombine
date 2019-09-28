@@ -1,7 +1,7 @@
 
 import Combine
 import CombineTesting
-import Publishers
+import FoundationCombine
 import XCTest
 
 final class CombineLatestCollectionTests: XCTestCase {
