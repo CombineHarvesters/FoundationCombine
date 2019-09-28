@@ -1,5 +1,6 @@
 
 import Combine
+import CombineTesting
 import Publishers
 import XCTest
 
@@ -7,78 +8,81 @@ final class CombineLatestCollectionTests: XCTestCase {
 
     func testSuccess() {
 
-        let value1 = PassthroughSubject<Int, TestingError>()
-        let value2 = PassthroughSubject<Int, TestingError>()
+        let a = PassthroughSubject<Int, Never>()
+        let b = PassthroughSubject<Int, Never>()
 
-        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
-        let tracking = TrackingSubscriber()
+        let combineLatest = [a, b].combineLatest
+        let subscriber = TestSubscriber<[Int], Never>()
 
-        value1.send(1)
-        combineLatest.subscribe(tracking) // Subscription
-        value2.send(2)
-        value1.send(3) // Five
-        value2.send(4) // Seven
-        value1.send(completion: .finished)
-        value1.send(5)
-        value2.send(6) // Nine
-        value2.send(completion: .finished) // Completion
-        value2.send(7)
+        a.send(1)
+        combineLatest.subscribe(subscriber) // Subscription
+        b.send(2)
+        a.send(3) // [3,2]
+        b.send(4) // [3,4]
+        a.send(completion: .finished)
+        a.send(5)
+        b.send(6) // [3,6]
+        b.send(completion: .finished) // Completion
+        b.send(7)
 
-        XCTAssertEqual(tracking.history, [.subscription(Subscriptions.empty),
-                                          .value(5),
-                                          .value(7),
-                                          .value(9),
-                                          .completion(.finished)])
+        XCTAssertEqual(subscriber.events, [
+            .subscription,
+            .input([3,2]),
+            .input([3,4]),
+            .input([3,6]),
+            .completion(.finished)
+        ])
     }
 
     func testFailure() {
 
-        let value1 = PassthroughSubject<Int, TestingError>()
-        let value2 = PassthroughSubject<Int, TestingError>()
+        let a = PassthroughSubject<Int, TestError>()
+        let b = PassthroughSubject<Int, TestError>()
+        let combineLatest = [a, b].combineLatest
+        let subscriber = TestSubscriber<[Int], TestError>()
 
-        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
-        let tracking = TrackingSubscriber()
+        a.send(1)
+        combineLatest.subscribe(subscriber) // subscription
+        b.send(2)
+        a.send(3) // [3,2]
+        b.send(4) // [3,4]
+        a.send(completion: .failure("Error")) // completion
+        a.send(5)
+        b.send(6)
+        b.send(completion: .finished)
+        b.send(7)
 
-        let error = TestingError(description: "Test")
-
-        value1.send(1)
-        combineLatest.subscribe(tracking) // Subscription
-        value2.send(2)
-        value1.send(3) // Five
-        value2.send(4) // Seven
-        value1.send(completion: .failure(error)) // Completion
-        value1.send(5)
-        value2.send(6)
-        value2.send(completion: .finished)
-        value2.send(7)
-
-        XCTAssertEqual(tracking.history, [.subscription(Subscriptions.empty),
-                                          .value(5),
-                                          .value(7),
-                                          .completion(.failure(error))])
+        XCTAssertEqual(subscriber.events, [
+            .subscription,
+            .input([3,2]),
+            .input([3,4]),
+            .completion(.failure("Error"))
+        ])
     }
 
     func testCancel() {
 
-        let value1 = PassthroughSubject<Int, TestingError>()
-        let value2 = PassthroughSubject<Int, TestingError>()
+        let a = PassthroughSubject<Int, Never>()
+        let b = PassthroughSubject<Int, Never>()
 
-        let combineLatest = [value1, value2].combineLatest.map { $0.reduce(0, +) }
-        let tracking = TrackingSubscriber()
+        let combineLatest = [a, b].combineLatest
+        let subscriber = TestSubscriber<[Int], Never>()
 
-        value1.send(1)
-        combineLatest.subscribe(tracking) // Subscription
-        value2.send(2)
-        value1.send(3) // Five
-        value2.send(4) // Seven
-        tracking.subscriptions.forEach { $0.cancel() }
-        value1.send(5)
-        value2.send(6)
-        value2.send(completion: .finished)
-        value2.send(7)
+        a.send(1)
+        combineLatest.subscribe(subscriber) // Subscription
+        b.send(2)
+        a.send(3) // [3,2]
+        b.send(4) // [3,4]
+        subscriber.subscriptions.forEach { $0.cancel() }
+        a.send(5)
+        b.send(6)
+        b.send(completion: .finished)
+        b.send(7)
 
-        XCTAssertEqual(tracking.history, [.subscription(Subscriptions.empty),
-                                          .value(5),
-                                          .value(7)])
+        XCTAssertEqual(subscriber.events, [
+            .subscription,
+            .input([3,2]),
+            .input([3,4])
+        ])
     }
 }

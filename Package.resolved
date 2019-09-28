@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CombineTesting",
+        "repositoryURL": "https://github.com/CombineHarvesters/CombineTesting",
+        "state": {
+          "branch": "master",
+          "revision": "716565b7c42c9cc1f872c9f3126cd1a82cf58f40",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

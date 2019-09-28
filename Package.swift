@@ -15,11 +15,14 @@ let package = Package(
             name: "Publishers",
             targets: ["Publishers"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/CombineHarvesters/CombineTesting", .branch("master"))
+    ],
     targets: [
         .target(
             name: "Publishers"),
         .testTarget(
             name: "PublishersTests",
-            dependencies: ["Publishers"]),
+            dependencies: ["Publishers", "CombineTesting"]),
     ]
 )
