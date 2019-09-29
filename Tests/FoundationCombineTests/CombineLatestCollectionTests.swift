@@ -10,7 +10,6 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let a = PassthroughSubject<Int, Never>()
         let b = PassthroughSubject<Int, Never>()
-
         let combineLatest = [a, b].combineLatest
         let subscriber = TestSubscriber<[Int], Never>()
 
@@ -64,7 +63,6 @@ final class CombineLatestCollectionTests: XCTestCase {
 
         let a = PassthroughSubject<Int, Never>()
         let b = PassthroughSubject<Int, Never>()
-
         let combineLatest = [a, b].combineLatest
         let subscriber = TestSubscriber<[Int], Never>()
 
