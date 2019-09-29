@@ -4,7 +4,7 @@ import CombineTesting
 import FoundationCombine
 import XCTest
 
-final class ZipTests: XCTestCase {
+final class ZipCollectionTests: XCTestCase {
 
     func testSuccess() {
         let a = PassthroughSubject<Int, Never>()

@@ -9,7 +9,7 @@ import Combine
 /// - The publishers should all have the same type
 ///
 /// The failure of any publisher causes a failure of this publisher. When all the publishers complete successfully, this publsher completes successfully
-public struct Zip<Publishers>: Publisher
+public struct ZipCollection<Publishers>: Publisher
     where
     Publishers: Collection,
     Publishers.Element: Publisher
@@ -34,7 +34,7 @@ public struct Zip<Publishers>: Publisher
     }
 }
 
-extension Zip {
+extension ZipCollection {
     /// A subscription for a Zip publisher
     public final class Subscription<Subscriber>: Combine.Subscription
         where
@@ -126,7 +126,7 @@ final class Queue<T> {
 
 extension Collection where Element: Publisher {
     /// Combine the array of publishers to give a single array of the `Zip ` of their outputs
-    public var zip: Zip<Self> {
-        Zip(self)
+    public var zip: ZipCollection<Self> {
+        ZipCollection(self)
     }
 }
