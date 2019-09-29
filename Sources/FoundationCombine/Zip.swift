@@ -2,6 +2,13 @@
 import Foundation
 import Combine
 
+extension Collection where Element: Publisher {
+    /// Combine the array of publishers to give a single array of the `Zip ` of their outputs
+    public var zipCollection: Zip<Self> {
+        Zip(self)
+    }
+}
+
 /// A `Publisher` that combines an array of publishers to provide an output of an array of the `Zip` of their respective outputs.
 ///
 /// This behaves similarly to Combine's `Publishers.Zip` except:
@@ -9,11 +16,12 @@ import Combine
 /// - The publishers should all have the same type
 ///
 /// The failure of any publisher causes a failure of this publisher. When all the publishers complete successfully, this publsher completes successfully
-public struct Zip<Publishers>: Publisher
+public struct Zip<Publishers>
     where
     Publishers: Collection,
     Publishers.Element: Publisher
 {
+
     public typealias Output = [Publishers.Element.Output]
     public typealias Failure = Publishers.Element.Failure
 
@@ -23,6 +31,9 @@ public struct Zip<Publishers>: Publisher
         self.publishers = publishers
     }
 
+}
+
+extension Zip: Publisher {
     public func receive<Subscriber>(subscriber: Subscriber)
         where
         Subscriber: Combine.Subscriber,
@@ -121,12 +132,5 @@ final class Queue<T> {
     /// Remove all elements from the queue
     func removeAll() {
         elements.removeAll()
-    }
-}
-
-extension Collection where Element: Publisher {
-    /// Combine the array of publishers to give a single array of the `Zip ` of their outputs
-    public var zip: Zip<Self> {
-        Zip(self)
     }
 }

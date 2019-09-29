@@ -9,7 +9,7 @@ final class ZipTests: XCTestCase {
     func testSuccess() {
         let a = PassthroughSubject<Int, Never>()
         let b = PassthroughSubject<Int, Never>()
-        let publisher = [a, b].zip
+        let publisher = [a, b].zipCollection
         let subscriber = TestSubscriber<[Int], Never>()
 
         publisher.subscribe(subscriber) // Subscription
@@ -36,7 +36,7 @@ final class ZipTests: XCTestCase {
     func testFailure() {
         let a = PassthroughSubject<Int, TestError>()
         let b = PassthroughSubject<Int, TestError>()
-        let publisher = [a, b].zip
+        let publisher = [a, b].zipCollection
         let subscriber = TestSubscriber<[Int], TestError>()
 
         publisher.subscribe(subscriber) // subscription
@@ -57,7 +57,7 @@ final class ZipTests: XCTestCase {
     func testCancel() {
         let a = PassthroughSubject<Int, TestError>()
         let b = PassthroughSubject<Int, TestError>()
-        let publisher = [a, b].zip
+        let publisher = [a, b].zipCollection
         let subscriber = TestSubscriber<[Int], TestError>()
 
         publisher.subscribe(subscriber) // subscription
