@@ -48,7 +48,7 @@ public struct CombineLatestCollection<Publishers>: Publisher
 extension CombineLatestCollection {
 
     /// A subscription for a CombineLatestCollection publisher.
-    public final class Subscription<Subscriber>: Combine.Subscription
+    fileprivate final class Subscription<Subscriber>: Combine.Subscription
         where
         Subscriber: Combine.Subscriber,
         Subscriber.Failure == Publishers.Element.Failure,
@@ -57,7 +57,7 @@ extension CombineLatestCollection {
 
         private let subscribers: [AnyCancellable]
 
-        fileprivate init(subscriber: Subscriber, publishers: Publishers) {
+        init(subscriber: Subscriber, publishers: Publishers) {
 
             var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
             var completions = 0

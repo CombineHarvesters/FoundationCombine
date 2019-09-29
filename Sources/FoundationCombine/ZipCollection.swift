@@ -43,7 +43,7 @@ public struct ZipCollection<Publishers>: Publisher
 
 extension ZipCollection {
     /// A subscription for a Zip publisher
-    public final class Subscription<Subscriber>: Combine.Subscription
+    fileprivate final class Subscription<Subscriber>: Combine.Subscription
         where
         Subscriber: Combine.Subscriber,
         Subscriber.Failure == Failure,
@@ -51,7 +51,7 @@ extension ZipCollection {
     {
         private let subscribers: [AnyCancellable]
 
-        fileprivate init(subscriber: Subscriber, publishers: Publishers) {
+        init(subscriber: Subscriber, publishers: Publishers) {
             var count = publishers.count
             var outputs = publishers.map { _ in Queue<Publishers.Element.Output>() }
             var completions = 0
@@ -103,7 +103,7 @@ extension ZipCollection {
 
 
 /// A generic structure around a FIFO collection
-final class Queue<T> {
+fileprivate final class Queue<T> {
     typealias Element = T
 
     private var elements = [Element]()
