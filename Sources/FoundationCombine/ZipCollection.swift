@@ -50,10 +50,12 @@ extension ZipCollection {
         Subscriber.Input == Output
     {
         private let subscribers: [AnyCancellable]
+        private let queues: [Queue<Publishers.Element.Output>]
 
         init(subscriber: Subscriber, publishers: Publishers) {
             var count = publishers.count
-            var outputs = publishers.map { _ in Queue<Publishers.Element.Output>() }
+            let outputs = publishers.map { _ in Queue<Publishers.Element.Output>() }
+            queues = outputs
             var completions = 0
             var hasCompleted = false
             let lock = NSLock()
@@ -95,6 +97,7 @@ extension ZipCollection {
 
         public func cancel() {
             subscribers.forEach { $0.cancel() }
+            queues.forEach { $0.removeAll() }
         }
         
         public func request(_ demand: Subscribers.Demand) {}
