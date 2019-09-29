@@ -2,6 +2,13 @@
 import Foundation
 import Combine
 
+extension Collection where Element: Publisher {
+    /// Combine the array of publishers to give a single array of the `Zip ` of their outputs
+    public var zip: ZipCollection<Self> {
+        ZipCollection(self)
+    }
+}
+
 /// A `Publisher` that combines an array of publishers to provide an output of an array of the `Zip` of their respective outputs.
 ///
 /// This behaves similarly to Combine's `Publishers.Zip` except:
@@ -121,12 +128,5 @@ final class Queue<T> {
     /// Remove all elements from the queue
     func removeAll() {
         elements.removeAll()
-    }
-}
-
-extension Collection where Element: Publisher {
-    /// Combine the array of publishers to give a single array of the `Zip ` of their outputs
-    public var zip: ZipCollection<Self> {
-        ZipCollection(self)
     }
 }
