@@ -79,43 +79,42 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
 
         cancellables = publishers.enumerated().map { index, publisher in
 
-            publisher
-                .sink(receiveCompletion: { completion in
+            publisher.sink(receiveCompletion: { completion in
 
-                    lock.lock()
-                    defer { lock.unlock() }
+                lock.lock()
+                defer { lock.unlock() }
 
-                    guard case .finished = completion else {
-                        // One failure in any of the publishers cause a
-                        // failure for this subscription.
-                        subscriber.receive(completion: completion)
-                        hasCompleted = true
-                        return
-                    }
+                guard case .finished = completion else {
+                    // One failure in any of the publishers cause a
+                    // failure for this subscription.
+                    subscriber.receive(completion: completion)
+                    hasCompleted = true
+                    return
+                }
 
-                    completions += 1
+                completions += 1
 
-                    if completions == publishers.count {
-                        subscriber.receive(completion: completion)
-                        hasCompleted = true
-                    }
+                if completions == publishers.count {
+                    subscriber.receive(completion: completion)
+                    hasCompleted = true
+                }
 
-                }, receiveValue: { value in
+            }, receiveValue: { value in
 
-                    lock.lock()
-                    defer { lock.unlock() }
+                lock.lock()
+                defer { lock.unlock() }
 
-                    guard !hasCompleted else { return }
+                guard !hasCompleted else { return }
 
-                    values[index] = value
+                values[index] = value
 
-                    // Get non-optional array of values and make sure we
-                    // have a full array of values.
-                    let current = values.compactMap { $0 }
-                    if current.count == publishers.count {
-                        _ = subscriber.receive(current)
-                    }
-                })
+                // Get non-optional array of values and make sure we
+                // have a full array of values.
+                let current = values.compactMap { $0 }
+                if current.count == publishers.count {
+                    _ = subscriber.receive(current)
+                }
+            })
         }
     }
 
