@@ -55,64 +55,71 @@ extension CombineLatestCollection {
         Subscriber.Input == Output
     {
 
-        private let subscribers: [AnyCancellable]
+        private var cancellables: [AnyCancellable] = []
+        private let subscriber: Subscriber
+        private let publishers: Publishers
 
         init(subscriber: Subscriber, publishers: Publishers) {
-
-            var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
-            var completions = 0
-            var hasCompleted = false
-            let lock = NSLock()
-
-            subscribers = publishers.enumerated().map { index, publisher in
-
-                publisher
-                    .sink(receiveCompletion: { completion in
-
-                        lock.lock()
-                        defer { lock.unlock() }
-
-                        guard case .finished = completion else {
-                            // One failure in any of the publishers cause a
-                            // failure for this subscription.
-                            subscriber.receive(completion: completion)
-                            hasCompleted = true
-                            return
-                        }
-
-                        completions += 1
-
-                        if completions == publishers.count {
-                            subscriber.receive(completion: completion)
-                            hasCompleted = true
-                        }
-
-                    }, receiveValue: { value in
-
-                        lock.lock()
-                        defer { lock.unlock() }
-
-                        guard !hasCompleted else { return }
-
-                        values[index] = value
-
-                        // Get non-optional array of values and make sure we
-                        // have a full array of values.
-                        let current = values.compactMap { $0 }
-                        if current.count == publishers.count {
-                            _ = subscriber.receive(current)
-                        }
-                    })
-            }
+            self.subscriber = subscriber
+            self.publishers = publishers
         }
     }
 }
 
 extension CombineLatestCollection.Subscription: Combine.Subscription {
 
-    func request(_ demand: Subscribers.Demand) {}
+    func request(_ demand: Subscribers.Demand) {
+
+        let subscriber = self.subscriber
+        let publishers = self.publishers
+        var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
+        var completions = 0
+        var hasCompleted = false
+        let lock = NSLock()
+
+        cancellables = publishers.enumerated().map { index, publisher in
+
+            publisher
+                .sink(receiveCompletion: { completion in
+
+                    lock.lock()
+                    defer { lock.unlock() }
+
+                    guard case .finished = completion else {
+                        // One failure in any of the publishers cause a
+                        // failure for this subscription.
+                        subscriber.receive(completion: completion)
+                        hasCompleted = true
+                        return
+                    }
+
+                    completions += 1
+
+                    if completions == publishers.count {
+                        subscriber.receive(completion: completion)
+                        hasCompleted = true
+                    }
+
+                }, receiveValue: { value in
+
+                    lock.lock()
+                    defer { lock.unlock() }
+
+                    guard !hasCompleted else { return }
+
+                    values[index] = value
+
+                    // Get non-optional array of values and make sure we
+                    // have a full array of values.
+                    let current = values.compactMap { $0 }
+                    if current.count == publishers.count {
+                        _ = subscriber.receive(current)
+                    }
+                })
+        }
+    }
 
     func cancel() {
-        subscribers.forEach { $0.cancel() }
+        cancellables.forEach { $0.cancel() }
     }
 }
