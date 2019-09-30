@@ -94,10 +94,9 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
 
                 completions += 1
 
-                if completions == publishers.count {
-                    subscriber.receive(completion: completion)
-                    hasCompleted = true
-                }
+                guard completions == publishers.count else { return }
+                subscriber.receive(completion: completion)
+                hasCompleted = true
 
             }, receiveValue: { value in
 
@@ -111,9 +110,8 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
                 // Get non-optional array of values and make sure we
                 // have a full array of values.
                 let current = values.compactMap { $0 }
-                if current.count == publishers.count {
-                    _ = subscriber.receive(current)
-                }
+                guard current.count == publishers.count else { return }
+                _ = subscriber.receive(current)
             })
         }
     }
