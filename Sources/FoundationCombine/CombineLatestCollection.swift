@@ -58,10 +58,12 @@ extension CombineLatestCollection {
         private var cancellables: [AnyCancellable] = []
         private let subscriber: Subscriber
         private let publishers: Publishers
+        private var values: [Publishers.Element.Output?]
 
         init(subscriber: Subscriber, publishers: Publishers) {
             self.subscriber = subscriber
             self.publishers = publishers
+            values = Array(repeating: nil, count: publishers.count)
         }
     }
 }
@@ -72,7 +74,6 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
 
         let subscriber = self.subscriber
         let publishers = self.publishers
-        var values: [Publishers.Element.Output?] = Array(repeating: nil, count: publishers.count)
         var completions = 0
         var hasCompleted = false
         let lock = NSLock()
@@ -106,11 +107,11 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
 
                 guard !hasCompleted else { return }
 
-                values[index] = value
+                self.values[index] = value
 
                 // Get non-optional array of values and make sure we
                 // have a full array of values.
-                let current = values.compactMap { $0 }
+                let current = self.values.compactMap { $0 }
                 if current.count == publishers.count {
                     _ = subscriber.receive(current)
                 }
@@ -120,5 +121,6 @@ extension CombineLatestCollection.Subscription: Combine.Subscription {
 
     func cancel() {
         cancellables.forEach { $0.cancel() }
+        values = Array(repeating: nil, count: publishers.count)
     }
 }
