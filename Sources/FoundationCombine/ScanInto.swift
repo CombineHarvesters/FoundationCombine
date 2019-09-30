@@ -29,4 +29,26 @@ extension Publisher {
             return variable
         }
     }
+
+    /// Transforms elements from the upstream publisher by providing the current
+    /// element to an error-throwing closure along with the last value returned
+    /// by the closure.
+    ///
+    /// - Parameter initialValue: The value to use as the initial accumulating
+    ///                           value.
+    /// - Parameter updateAccumulatingResult: A closure that updates the
+    ///                                       accumulating value with the next
+    ///                                       element from the upstream
+    ///                                       publisher to produce a new value.
+    public func tryScan<Value>(
+        into initialValue: Value,
+        _ updateAccumulatingResult: @escaping (inout Value, Output) throws -> ()
+    ) -> Publishers.TryScan<Self, Value> {
+
+        tryScan(initialValue) { (value, output) -> Value in
+            var variable = value
+            try updateAccumulatingResult(&variable, output)
+            return variable
+        }
+    }
 }
