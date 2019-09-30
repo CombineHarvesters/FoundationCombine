@@ -20,7 +20,7 @@ extension Collection where Element: Publisher {
 ///
 /// When all publishers complete successfully, that will cause the successful
 /// completion of this publisher.
-public struct CombineLatestCollection<Publishers>: Publisher
+public struct CombineLatestCollection<Publishers>
     where
     Publishers: Collection,
     Publishers.Element: Publisher
@@ -32,6 +32,9 @@ public struct CombineLatestCollection<Publishers>: Publisher
     public init(_ publishers: Publishers) {
         self.publishers = publishers
     }
+}
+
+extension CombineLatestCollection: Publisher {
 
     public func receive<Subscriber>(subscriber: Subscriber)
         where
