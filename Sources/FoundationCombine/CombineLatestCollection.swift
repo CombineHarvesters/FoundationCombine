@@ -48,7 +48,7 @@ public struct CombineLatestCollection<Publishers>: Publisher
 extension CombineLatestCollection {
 
     /// A subscription for a CombineLatestCollection publisher.
-    fileprivate final class Subscription<Subscriber>: Combine.Subscription
+    fileprivate final class Subscription<Subscriber>
         where
         Subscriber: Combine.Subscriber,
         Subscriber.Failure == Publishers.Element.Failure,
@@ -105,11 +105,14 @@ extension CombineLatestCollection {
                     })
             }
         }
+    }
+}
 
-        public func request(_ demand: Subscribers.Demand) {}
+extension CombineLatestCollection.Subscription: Combine.Subscription {
 
-        public func cancel() {
-            subscribers.forEach { $0.cancel() }
-        }
+    func request(_ demand: Subscribers.Demand) {}
+
+    func cancel() {
+        subscribers.forEach { $0.cancel() }
     }
 }
