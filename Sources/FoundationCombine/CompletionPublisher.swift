@@ -59,7 +59,7 @@ extension CompletionPublisher.Subscription: Subscription {
     }
 }
 
-// MARK: - (Out?, Failure?) -> Void
+// MARK: - (Output?, Failure?) -> Void
 
 extension CompletionPublisher {
 
@@ -113,7 +113,7 @@ extension CompletionPublisher {
     }
 }
 
-// MARK: - (Error?) -> Void
+// MARK: - (Failure?) -> Void
 
 extension CompletionPublisher where Output == Void {
 
@@ -211,7 +211,7 @@ extension CompletionPublisher where Output == Void, Failure == Never {
     }
 }
 
-// MARK: - (Failure?, Output) -> Void
+// MARK: - (Failure?, Output?) -> Void
 
 extension CompletionPublisher {
 
